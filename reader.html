@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>خواندن مانگا</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="reader">
+<header class="reader-head">
+  <a href="/">← چپترها</a>
+  <strong id="title">در حال بارگذاری...</strong>
+  <span id="counter"></span>
+</header>
+<main>
+  <div id="page"></div>
+  <nav class="reader-nav">
+    <button id="prev">قبلی</button>
+    <button id="next">بعدی</button>
+  </nav>
+</main>
+<script>
+let pages=[], index=0;
+const n=Number(new URLSearchParams(location.search).get('chapter'));
+async function init(){
+  const cs=await (await fetch('/api/chapters')).json();
+  const c=cs.find(x=>x.number===n);
+  if(!c){document.querySelector('#page').innerHTML='<h2>چپتر پیدا نشد.</h2>';return;}
+  pages=c.pages; document.querySelector('#title').textContent=c.title; show();
+}
+function show(){
+  document.querySelector('#page').innerHTML=`<img class="manga-page" src="${pages[index].url}" alt="صفحه ${index+1}">`;
+  document.querySelector('#counter').textContent=`${index+1} / ${pages.length}`;
+  document.querySelector('#prev').disabled=index===0;
+  document.querySelector('#next').disabled=index===pages.length-1;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+prev.onclick=()=>{if(index){index--;show()}};
+next.onclick=()=>{if(index<pages.length-1){index++;show()}};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')next.click();if(e.key==='ArrowRight')prev.click()});
+init();
+</script>
+</body>
+</html>

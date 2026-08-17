@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مانگای من</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>📖 مانگای من</h1>
+    <p>چپتر به چپتر بخون</p>
+  </div>
+  <a class="admin-link" href="/admin.html">مدیریت</a>
+</header>
+
+<main>
+  <section id="chapters" class="grid"></section>
+  <div id="empty" class="empty">هنوز چپتری اضافه نشده.</div>
+</main>
+
+<footer>ساخته‌شده برای مانگای شخصی شما</footer>
+<script>
+async function load() {
+  const res = await fetch('/api/chapters');
+  const chapters = await res.json();
+  const box = document.querySelector('#chapters');
+  document.querySelector('#empty').style.display = chapters.length ? 'none' : 'block';
+  box.innerHTML = chapters.map(c => `
+    <a class="chapter" href="/reader.html?chapter=${c.number}">
+      <div class="chapter-num">CHAPTER ${c.number}</div>
+      <h2>${escapeHtml(c.title)}</h2>
+      <span>${c.pages.length} صفحه</span>
+    </a>`).join('');
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+load();
+</script>
+</body>
+</html>

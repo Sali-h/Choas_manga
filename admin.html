@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مدیریت مانگا</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header><div><h1>⚙️ مدیریت مانگا</h1><p>اضافه‌کردن و حذف چپترها</p></div><a class="admin-link" href="/">مشاهده سایت</a></header>
+<main class="admin">
+  <section class="panel">
+    <h2>افزودن چپتر</h2>
+    <input id="password" type="password" placeholder="رمز مدیریت">
+    <input id="chapter" type="number" min="1" placeholder="شماره چپتر">
+    <input id="title" placeholder="عنوان چپتر (اختیاری)">
+    <input id="pages" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+    <p class="hint">صفحه‌ها را به ترتیب انتخاب کن. JPG / PNG / WEBP — حداکثر ۸۰ فایل.</p>
+    <button id="add">آپلود چپتر</button>
+    <div id="msg"></div>
+  </section>
+  <section class="panel">
+    <h2>چپترهای موجود</h2>
+    <div id="list"></div>
+  </section>
+</main>
+<script>
+async function load(){
+ const cs=await (await fetch('/api/chapters')).json();
+ list.innerHTML=cs.length?cs.map(c=>`<div class="row"><span>Chapter ${c.number} — ${c.pages.length} صفحه</span><button onclick="del(${c.number})">حذف</button></div>`).join(''):'هنوز چیزی نیست.';
+}
+add.onclick=async()=>{
+ const fd=new FormData(); fd.append('chapter',chapter.value); fd.append('title',title.value);
+ [...pages.files].forEach(f=>fd.append('pages',f));
+ msg.textContent='در حال آپلود...';
+ try{
+  const r=await fetch('/api/chapters',{method:'POST',headers:{'x-admin-password':password.value},body:fd});
+  const j=await r.json(); if(!r.ok) throw new Error(j.error);
+  msg.textContent='✅ چپتر اضافه شد.'; pages.value=''; title.value=''; load();
+ }catch(e){msg.textContent='❌ '+e.message}
+};
+async function del(n){
+ if(!confirm('این چپتر حذف شود؟'))return;
+ const r=await fetch('/api/chapters/'+n,{method:'DELETE',headers:{'x-admin-password':password.value}});
+ const j=await r.json(); msg.textContent=r.ok?'حذف شد.':'❌ '+j.error; load();
+}
+load();
+</script>
+</body>
+</html>
